@@ -6,7 +6,7 @@ A full-stack banking application built with **Angular** and **.NET**, designed a
 
 This project simulates core banking operations — deposits, withdrawals, and transaction tracking — starting with a minimal frontend and progressively layering in backend services, authentication, and advanced features.
 
-## Phase 1 — Frontend Only (Current)
+## Phase 1 — Frontend Only (Complete)
 
 A single-user, single-account banking interface built entirely in Angular with in-memory data.
 
@@ -27,25 +27,50 @@ A single-user, single-account banking interface built entirely in Angular with i
 - Pipes for currency and date formatting
 - Component communication
 
-> **Note:** Data is stored in memory only. Refreshing the page will reset all data. Persistence is introduced in Phase 2.
+## Phase 2 — .NET Backend (Complete)
+
+Full-stack integration with a .NET 8 Web API backend. Data is now persisted in SQL Server — no more in-memory state.
+
+### Features
+
+- **REST API** — Deposit, withdraw, get balance, and transaction history endpoints
+- **Persistent Data** — All transactions and balances stored in SQL Server via Entity Framework Core
+- **Clean Architecture** — Domain, Application, Infrastructure, and API layers with clear separation of concerns
+- **DDD** — Rich domain entities with encapsulated business logic and private setters
+- **CQRS** — Commands (deposit, withdraw) separated from queries (balance, transactions) using MediatR
+- **Angular-to-API Integration** — Frontend now calls the .NET backend via HttpClient
+
+### .NET Concepts Covered
+
+- Clean Architecture (4-project structure)
+- Domain-Driven Design (rich entities, encapsulation)
+- CQRS with MediatR (commands and queries)
+- Entity Framework Core 8 (code-first, configurations, backing field pattern)
+- Repository pattern
+- Dependency injection
+- CORS configuration
+- Auto-migration and database seeding
 
 ## Roadmap
 
-| Phase | Scope | Key Additions |
-|-------|-------|---------------|
-| **Phase 1** | Frontend only | Angular fundamentals, in-memory data |
-| **Phase 2** | Add .NET backend | Web API, Entity Framework, SQLite/SQL Server |
-| **Phase 3** | Auth & multi-account | JWT authentication, savings/checking accounts, transfers |
-| **Phase 4** | Advanced features | Spending analytics, recurring payments, multi-currency, admin panel |
+| Phase | Scope | Status |
+|-------|-------|--------|
+| **Phase 1** | Frontend only — Angular fundamentals, in-memory data | ✅ Complete |
+| **Phase 2** | Add .NET backend — Web API, Entity Framework, SQL Server | ✅ Complete |
+| **Phase 3** | Auth & multi-account — JWT authentication, savings/checking accounts, transfers | Upcoming |
+| **Phase 4** | Advanced features — Spending analytics, recurring payments, multi-currency, admin panel | Upcoming |
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Angular |
-| Backend | .NET Web API *(Phase 2+)* |
-| Database | SQLite / SQL Server *(Phase 2+)* |
-| Auth | JWT *(Phase 3+)* |
+| Frontend | Angular 21 |
+| Backend | .NET 8 Web API |
+| Database | SQL Server LocalDB |
+| ORM | Entity Framework Core 8 |
+| Mediator | MediatR |
+| Architecture | Clean Architecture + DDD + CQRS |
+| Auth | JWT *(Phase 3)* |
 
 ## Getting Started
 
@@ -53,14 +78,23 @@ A single-user, single-account banking interface built entirely in Angular with i
 
 - [Node.js](https://nodejs.org/) (LTS)
 - [Angular CLI](https://angular.dev/tools/cli)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- SQL Server LocalDB (included with Visual Studio)
 
-### Run the Application
+### Run the Backend
 
 ```bash
-# Install dependencies
-npm install
+cd server/BankApp/src/BankApp.API
+dotnet run
+```
 
-# Start the development server
+The API starts at `https://localhost:7160`. The database is created and migrated automatically on startup.
+
+### Run the Frontend
+
+```bash
+cd client
+npm install
 ng serve
 ```
 
