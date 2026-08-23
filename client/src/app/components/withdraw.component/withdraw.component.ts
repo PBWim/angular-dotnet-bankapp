@@ -26,15 +26,21 @@ export class WithdrawComponent {
   }
 
   onSubmit(): void {
+    // if (this.withdrawForm.valid) {
+    //   const { amount, description } = this.withdrawForm.value;
+    //   const success = this.bankService.withdraw(Number(amount), description);
+
+    //   if (success) {
+    //     this.router.navigate(['/dashboard']);
+    //   } else {
+    //     this.insufficientFunds = true;
+    //   }
+    // }
+
     if (this.withdrawForm.valid) {
       const { amount, description } = this.withdrawForm.value;
-      const success = this.bankService.withdraw(Number(amount), description);
-
-      if (success) {
-        this.router.navigate(['/dashboard']);
-      } else {
-        this.insufficientFunds = true;
-      }
+      this.bankService.withdraw(Number(amount), description);
+      this.router.navigate(['/dashboard']);
     }
   }
 }

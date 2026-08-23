@@ -30,7 +30,7 @@ internal class Program
         {
             options.AddPolicy("AllowAngular", policy =>
             {
-                policy.WithOrigins("http://localhost:4200")
+                policy.WithOrigins("http://localhost:4200", "http://localhost:52193")
                       .AllowAnyHeader()
                       .AllowAnyMethod();
             });

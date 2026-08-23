@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Transaction } from '../models/transaction.model';
+import { ApiService } from './api.service';
 
 @Injectable({
   // The providedIn: 'root' option makes this service a singleton and available throughout the 
@@ -26,53 +27,84 @@ export class BankService {
   balance$ = this.balance.asObservable();
   transactions$ = this.transactions.asObservable();
 
-  deposit(amount: number, description: string): void {
-    const newBalance = this.balance.value + amount;
-
-    // This updates the balance value and notifies all subscribers.
-    // Think of next() as "push a new value into the BehaviorSubject."
-    // Whatever component is listening to balance$ will immediately receive newBalance.
-    this.balance.next(newBalance);
-
-    const transaction: Transaction = {
-      id: Date.now(),
-      type: 'deposit',
-      amount,
-      description,
-      date: new Date(),
-      balance: newBalance
-    };
-
-    // This pushes a new transaction list to all subscribers, with the newest transaction first.
-    // Current transactions: [txn2, txn1]
-    // New transaction: txn3
-    // becomes: [txn3, txn2, txn1]
-    this.transactions.next([transaction, ...this.transactions.value]);
-
-    console.log('Balance after deposit:', this.balance.value); // .value gives you the balance right now
+  constructor(private apiService: ApiService) {
+    this.loadBalance();
+    this.loadTransactions();
   }
 
-  withdraw(amount: number, description: string): boolean {
-    if (amount > this.balance.value) {
-      return false;
-    }
+  private loadBalance(): void {
+    this.apiService.getBalance().subscribe(response => {
+      console.log('Balance loaded from API:', response);
+      this.balance.next(response.balance);  // extract the number from the object
+    });
+  }
 
-    const newBalance = this.balance.value - amount;
-    this.balance.next(newBalance);
+  private loadTransactions(): void {
+    this.apiService.getTransactions().subscribe(transactions => {
+      console.log('Transactions loaded from API:', transactions);
+      this.transactions.next(transactions);
+    });
+  }
 
-    const transaction: Transaction = {
-      id: Date.now(),
-      type: 'withdraw',
-      amount,
-      description,
-      date: new Date(),
-      balance: newBalance
-    };
+  deposit(amount: number, description: string): void {
+    // const newBalance = this.balance.value + amount;
 
-    this.transactions.next([transaction, ...this.transactions.value]);
+    // // This updates the balance value and notifies all subscribers.
+    // // Think of next() as "push a new value into the BehaviorSubject."
+    // // Whatever component is listening to balance$ will immediately receive newBalance.
+    // this.balance.next(newBalance);
 
-    console.log('Balance after withdrawal:', this.balance.value);
+    // const transaction: Transaction = {
+    //   id: Date.now(),
+    //   type: 'deposit',
+    //   amount,
+    //   description,
+    //   date: new Date(),
+    //   balance: newBalance
+    // };
 
-    return true;
+    // // This pushes a new transaction list to all subscribers, with the newest transaction first.
+    // // Current transactions: [txn2, txn1]
+    // // New transaction: txn3
+    // // becomes: [txn3, txn2, txn1]
+    // this.transactions.next([transaction, ...this.transactions.value]);
+
+    // console.log('Balance after deposit:', this.balance.value); // .value gives you the balance right now
+
+    this.apiService.deposit(amount, description).subscribe(response => {
+      console.log('Deposit response:', response);
+      this.loadBalance();
+      this.loadTransactions();
+    });
+  }
+
+  withdraw(amount: number, description: string): void {
+    // if (amount > this.balance.value) {
+    //   return false;
+    // }
+
+    // const newBalance = this.balance.value - amount;
+    // this.balance.next(newBalance);
+
+    // const transaction: Transaction = {
+    //   id: Date.now(),
+    //   type: 'withdraw',
+    //   amount,
+    //   description,
+    //   date: new Date(),
+    //   balance: newBalance
+    // };
+
+    // this.transactions.next([transaction, ...this.transactions.value]);
+
+    // console.log('Balance after withdrawal:', this.balance.value);
+
+    // return true;
+
+    this.apiService.withdraw(amount, description).subscribe(response => {
+      console.log('Withdraw response:', response);
+      this.loadBalance();
+      this.loadTransactions();
+    });
   }
 }
