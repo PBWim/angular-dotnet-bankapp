@@ -3,6 +3,11 @@ import { BehaviorSubject } from 'rxjs';
 import { Transaction } from '../models/transaction.model';
 
 @Injectable({
+  // The providedIn: 'root' option makes this service a singleton and available throughout the 
+  // application without needing to add it to the providers array of any module.
+
+  // Angular creates one single instance of it for the entire app. Every component that injects it gets 
+  // the same instance — so they all read and write to the same balance and transactions.
   providedIn: 'root',
 })
 export class BankService {
