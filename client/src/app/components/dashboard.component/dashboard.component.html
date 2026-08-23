@@ -3,6 +3,7 @@
   <div class="balance-card">
     <span class="label">Current Balance</span>
     <!-- async pipe automatically subscribes to balance$ and unsubscribes when component is destroyed -->
+    <!-- The async pipe keeps watching — like setting up an alert that notifies you every time your balance changes. -->
     <span class="amount">{{ balance$ | async | currency: 'USD' }}</span>
   </div>
 </div>

@@ -48,6 +48,8 @@ export class BankService {
     // New transaction: txn3
     // becomes: [txn3, txn2, txn1]
     this.transactions.next([transaction, ...this.transactions.value]);
+
+    console.log('Balance after deposit:', this.balance.value); // .value gives you the balance right now
   }
 
   withdraw(amount: number, description: string): boolean {
@@ -68,6 +70,9 @@ export class BankService {
     };
 
     this.transactions.next([transaction, ...this.transactions.value]);
+
+    console.log('Balance after withdrawal:', this.balance.value);
+
     return true;
   }
 }
