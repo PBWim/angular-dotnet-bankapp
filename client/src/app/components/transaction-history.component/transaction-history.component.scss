@@ -1,0 +1,74 @@
+.history {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+}
+
+.empty {
+  text-align: center;
+  color: #888;
+}
+
+.transaction {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  border-left: 4px solid;
+}
+
+.deposit {
+  border-left-color: #2e7d32;
+  background: #f1f8f1;
+}
+
+.withdraw {
+  border-left-color: #d32f2f;
+  background: #fef2f2;
+}
+
+.txn-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.type {
+  font-weight: 600;
+}
+
+.description {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.date {
+  color: #888;
+  font-size: 0.8rem;
+}
+
+.txn-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.amount {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.deposit .amount {
+  color: #2e7d32;
+}
+
+.withdraw .amount {
+  color: #d32f2f;
+}
+
+.balance {
+  color: #888;
+  font-size: 0.8rem;
+}

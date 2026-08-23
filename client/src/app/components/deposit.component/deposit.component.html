@@ -1,0 +1,23 @@
+<div class="deposit">
+  <h2>Make a Deposit</h2>
+
+  <form [formGroup]="depositForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="amount">Amount ($)</label>
+      <input id="amount" type="number" formControlName="amount" placeholder="0.00">
+      @if (depositForm.get('amount')?.invalid && depositForm.get('amount')?.touched) {
+        <span class="error">Please enter a valid amount (minimum $0.01)</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description</label>
+      <input id="description" type="text" formControlName="description" placeholder="e.g. Salary, Gift">
+      @if (depositForm.get('description')?.invalid && depositForm.get('description')?.touched) {
+        <span class="error">Description is required</span>
+      }
+    </div>
+
+    <button type="submit" [disabled]="depositForm.invalid">Deposit</button>
+  </form>
+</div>

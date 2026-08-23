@@ -1,0 +1,23 @@
+<div class="history">
+  <h2>Transaction History</h2>
+
+  @if ((transactions$ | async)?.length === 0) {
+    <p class="empty">No transactions yet.</p>
+  }
+
+  @for (txn of transactions$ | async; track txn.id) {
+    <div class="transaction" [class.deposit]="txn.type === 'deposit'" [class.withdraw]="txn.type === 'withdraw'">
+      <div class="txn-left">
+        <span class="type">{{ txn.type === 'deposit' ? 'Deposit' : 'Withdrawal' }}</span>
+        <span class="description">{{ txn.description }}</span>
+        <span class="date">{{ txn.date | date: 'medium' }}</span>
+      </div>
+      <div class="txn-right">
+        <span class="amount">
+          {{ txn.type === 'deposit' ? '+' : '-' }}{{ txn.amount | currency: 'USD' }}
+        </span>
+        <span class="balance">Balance: {{ txn.balance | currency: 'USD' }}</span>
+      </div>
+    </div>
+  }
+</div>

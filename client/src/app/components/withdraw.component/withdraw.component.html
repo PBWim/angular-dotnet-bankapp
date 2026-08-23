@@ -1,0 +1,27 @@
+<div class="withdraw">
+  <h2>Make a Withdrawal</h2>
+
+  @if (insufficientFunds) {
+    <div class="alert">Insufficient funds for this withdrawal.</div>
+  }
+
+  <form [formGroup]="withdrawForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="amount">Amount ($)</label>
+      <input id="amount" type="number" formControlName="amount" placeholder="0.00">
+      @if (withdrawForm.get('amount')?.invalid && withdrawForm.get('amount')?.touched) {
+        <span class="error">Please enter a valid amount (minimum $0.01)</span>
+      }
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description</label>
+      <input id="description" type="text" formControlName="description" placeholder="e.g. Rent, Groceries">
+      @if (withdrawForm.get('description')?.invalid && withdrawForm.get('description')?.touched) {
+        <span class="error">Description is required</span>
+      }
+    </div>
+
+    <button type="submit" [disabled]="withdrawForm.invalid">Withdraw</button>
+  </form>
+</div>

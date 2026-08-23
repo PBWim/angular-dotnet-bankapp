@@ -1,0 +1,8 @@
+<div class="dashboard">
+  <h2>Account Dashboard</h2>
+  <div class="balance-card">
+    <span class="label">Current Balance</span>
+    <!-- async pipe automatically subscribes to balance$ and unsubscribes when component is destroyed -->
+    <span class="amount">{{ balance$ | async | currency: 'USD' }}</span>
+  </div>
+</div>

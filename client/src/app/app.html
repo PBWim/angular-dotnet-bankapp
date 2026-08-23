@@ -7,7 +7,7 @@
 <!-- * * * * * * * to get started with your project! * * * * * * * -->
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 
-<style>
+<!-- <style>
   :host {
     --bright-blue: oklch(51.01% 0.274 263.83);
     --electric-violet: oklch(53.18% 0.28 296.97);
@@ -182,9 +182,9 @@
       margin-block: 1.5rem;
     }
   }
-</style>
+</style> -->
 
-<main class="main">
+<!-- <main class="main">
   <div class="content">
     <div class="left-side">
       <svg
@@ -330,7 +330,7 @@
       </div>
     </div>
   </div>
-</main>
+</main> -->
 
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * * The content above * * * * * * * * * * * * -->
@@ -340,5 +340,19 @@
 <!-- * * * * * * * * * * End of Placeholder  * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 
+<nav class="navbar">
+  <!-- routerLink — Angular's version of <a href> for SPA navigation. It changes the route without a full page reload.-->
 
+  <!-- routerLinkActive — Angular directive that adds the "active" class to the link when the route is active. -->
+  <a class="logo" routerLink="/dashboard">BankApp</a>
+  <div class="nav-links">
+    <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+    <a routerLink="/deposit" routerLinkActive="active">Deposit</a>
+    <a routerLink="/withdraw" routerLinkActive="active">Withdraw</a>
+    <a routerLink="/transactions" routerLinkActive="active">Transactions</a>
+  </div>
+</nav>
+
+<!-- <router-outlet> is a placeholder that Angular replaces with the component matching the current URL. -->
+<!-- When the user visits /dashboard, Angular looks at your app.routes.ts, finds that dashboard maps to DashboardComponent, and renders it where <router-outlet> sits. -->
 <router-outlet />
