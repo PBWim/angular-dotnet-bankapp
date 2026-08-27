@@ -2,4 +2,4 @@
 
 namespace BankApp.Application.Commands.Deposit;
 
-public record DepositCommand(decimal Amount, string Description) : IRequest<decimal>;
+public record DepositCommand(Guid UserId, decimal Amount, string Description) : IRequest<decimal>;

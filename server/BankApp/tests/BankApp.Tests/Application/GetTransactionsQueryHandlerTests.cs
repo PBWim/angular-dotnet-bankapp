@@ -11,6 +11,7 @@ namespace BankApp.Tests.Application
         private readonly Mock<IAccountRepository> _mockRepo;
         private readonly GetTransactionsQueryHandler _handler;
         private readonly Account _account;
+        private readonly Guid _userId = Guid.NewGuid();
 
         public GetTransactionsQueryHandlerTests()
         {
@@ -18,7 +19,7 @@ namespace BankApp.Tests.Application
             _mockRepo = new Mock<IAccountRepository>();
             _account = new Account();
 
-            _mockRepo.Setup(r => r.GetOrCreateDefaultAsync())
+            _mockRepo.Setup(r => r.GetByUserIdAsync(_userId))
                      .ReturnsAsync(_account);
 
             _handler = new GetTransactionsQueryHandler(_mockRepo.Object);
@@ -28,7 +29,7 @@ namespace BankApp.Tests.Application
         public async Task Handle_NoTransactions_ShouldReturnEmptyList()
         {
             // Arrange
-            var query = new GetTransactionsQuery();
+            var query = new GetTransactionsQuery(_userId);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -43,7 +44,7 @@ namespace BankApp.Tests.Application
             // Arrange
             _account.Deposit(100, "First");
             _account.Withdraw(50, "Second");
-            var query = new GetTransactionsQuery();
+            var query = new GetTransactionsQuery(_userId);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -57,7 +58,7 @@ namespace BankApp.Tests.Application
         {
             // Arrange
             _account.Deposit(100, "Salary");
-            var query = new GetTransactionsQuery();
+            var query = new GetTransactionsQuery(_userId);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -77,7 +78,7 @@ namespace BankApp.Tests.Application
             _account.Deposit(100, "First");
             _account.Deposit(200, "Second");
             _account.Deposit(300, "Third");
-            var query = new GetTransactionsQuery();
+            var query = new GetTransactionsQuery(_userId);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);

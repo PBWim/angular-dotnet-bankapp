@@ -21,13 +21,11 @@ public class AccountRepository : IAccountRepository
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 
-    public async Task<Account> GetOrCreateDefaultAsync()
+    public async Task<Account?> GetByUserIdAsync(Guid userId)
     {
-        var account = await _context.Accounts
+        return await _context.Accounts
             .Include(a => a.Transactions)
-            .FirstAsync();
-
-        return account;
+            .FirstOrDefaultAsync(a => a.UserId == userId);
     }
 
     public async Task SaveChangesAsync()

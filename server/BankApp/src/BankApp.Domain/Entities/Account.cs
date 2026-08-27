@@ -5,6 +5,7 @@ public class Account
     public Guid Id { get; private set; }
     public decimal Balance { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    public Guid UserId { get; private set; }
 
     private readonly List<Transaction> _transactions = new();
     public IReadOnlyCollection<Transaction> Transactions => _transactions.AsReadOnly();

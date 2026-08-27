@@ -7,6 +7,7 @@ public class BankDbContext : DbContext
 {
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
+    public DbSet<User> Users { get; set; }
 
     public BankDbContext(DbContextOptions<BankDbContext> options) : base(options) { }
 

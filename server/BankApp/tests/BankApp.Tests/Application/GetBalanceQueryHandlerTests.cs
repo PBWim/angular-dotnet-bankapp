@@ -10,6 +10,7 @@ namespace BankApp.Tests.Application
         private readonly Mock<IAccountRepository> _mockRepo;
         private readonly GetBalanceQueryHandler _handler;
         private readonly Account _account;
+        private readonly Guid _userId = Guid.NewGuid();
 
         public GetBalanceQueryHandlerTests()
         {
@@ -17,7 +18,7 @@ namespace BankApp.Tests.Application
             _mockRepo = new Mock<IAccountRepository>();
             _account = new Account();
 
-            _mockRepo.Setup(r => r.GetOrCreateDefaultAsync())
+            _mockRepo.Setup(r => r.GetByUserIdAsync(_userId))
                      .ReturnsAsync(_account);
 
             _handler = new GetBalanceQueryHandler(_mockRepo.Object);
@@ -27,7 +28,7 @@ namespace BankApp.Tests.Application
         public async Task Handle_NewAccount_ShouldReturnZero()
         {
             // Arrange
-            var query = new GetBalanceQuery();
+            var query = new GetBalanceQuery(_userId);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -41,7 +42,7 @@ namespace BankApp.Tests.Application
         {
             // Arrange
             _account.Deposit(250, "Setup");
-            var query = new GetBalanceQuery();
+            var query = new GetBalanceQuery(_userId);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -56,7 +57,7 @@ namespace BankApp.Tests.Application
             // Arrange
             _account.Deposit(500, "Salary");
             _account.Withdraw(150, "Rent");
-            var query = new GetBalanceQuery();
+            var query = new GetBalanceQuery(_userId);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);

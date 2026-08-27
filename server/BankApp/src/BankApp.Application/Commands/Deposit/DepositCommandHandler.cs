@@ -14,7 +14,9 @@ public class DepositCommandHandler : IRequestHandler<DepositCommand, decimal>
 
     public async Task<decimal> Handle(DepositCommand request, CancellationToken cancellationToken)
     {
-        var account = await _accountRepository.GetOrCreateDefaultAsync();
+        var account = await _accountRepository.GetByUserIdAsync(request.UserId)
+                ?? throw new InvalidOperationException("Account not found.");
+        
         account.Deposit(request.Amount, request.Description);
         await _accountRepository.SaveChangesAsync();
         return account.Balance;

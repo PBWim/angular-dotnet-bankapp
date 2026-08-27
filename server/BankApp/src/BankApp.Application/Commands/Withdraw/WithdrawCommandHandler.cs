@@ -14,7 +14,8 @@ public class WithdrawCommandHandler : IRequestHandler<WithdrawCommand, decimal>
 
     public async Task<decimal> Handle(WithdrawCommand request, CancellationToken cancellationToken)
     {
-        var account = await _accountRepository.GetOrCreateDefaultAsync();
+        var account = await _accountRepository.GetByUserIdAsync(request.UserId)
+            ?? throw new InvalidOperationException("Account not found.");
         account.Withdraw(request.Amount, request.Description);
         await _accountRepository.SaveChangesAsync();
         return account.Balance;

@@ -1,12 +1,16 @@
-﻿using BankApp.Application.Commands.Deposit;
+﻿using Azure.Core;
+using BankApp.Application.Commands.Deposit;
 using BankApp.Application.Commands.Withdraw;
 using BankApp.Application.Queries.GetBalance;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BankApp.API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class AccountController : ControllerBase
 {
@@ -17,10 +21,13 @@ public class AccountController : ControllerBase
         _mediator = mediator;
     }
 
+    private Guid GetUserId() =>
+        Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
     [HttpGet("balance")]
     public async Task<IActionResult> GetBalance()
     {
-        var balance = await _mediator.Send(new GetBalanceQuery());
+        var balance = await _mediator.Send(new GetBalanceQuery(GetUserId()));
         return Ok(new { balance });
     }
 
@@ -29,7 +36,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var newBalance = await _mediator.Send(command);
+            var newBalance = await _mediator.Send(new DepositCommand(GetUserId(), command.Amount, command.Description));
             return Ok(new { balance = newBalance });
         }
         catch (ArgumentException ex)
@@ -43,7 +50,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var newBalance = await _mediator.Send(command);
+            var newBalance = await _mediator.Send(new WithdrawCommand(GetUserId(), command.Amount, command.Description));
             return Ok(new { balance = newBalance });
         }
         catch (ArgumentException ex)

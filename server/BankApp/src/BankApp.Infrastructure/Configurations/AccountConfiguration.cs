@@ -9,7 +9,11 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
     public void Configure(EntityTypeBuilder<Account> builder)
     {
         builder.HasKey(a => a.Id);
+
         builder.Property(a => a.Balance).HasColumnType("decimal(18,2)");
+
+        builder.Property(a => a.UserId);
+
         builder.HasMany(a => a.Transactions)
                .WithOne()
                .HasForeignKey(t => t.AccountId);
