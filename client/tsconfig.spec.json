@@ -1,11 +1,16 @@
 /* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
 /* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+
+// tsconfig.spec.json is the TypeScript config only for test files. It extends your main tsconfig.json but 
+// adds test-specific settings — like telling TypeScript to recognize Jasmine's describe, it, expect etc.
+// Like BankApp.Tests.csproj (test project settings, references the main project)
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
     "types": [
-      "vitest/globals"
+      "vitest/globals",
+      "jasmine"
     ]
   },
   "include": [

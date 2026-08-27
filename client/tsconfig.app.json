@@ -1,5 +1,9 @@
 /* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
 /* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+
+// tsconfig.json — the main TypeScript config for your entire app. It tells TypeScript how to compile your Angular code 
+// (target version, module system, strict mode, paths etc.). Used when you run ng serve or ng build.
+// Like BankApp.API.csproj (main project settings)
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {

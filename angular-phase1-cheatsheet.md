@@ -379,6 +379,187 @@ JavaScript's `...` operator unpacks an array into individual items. Used in our 
 
 ---
 
+## 13. Frontend Testing with Vitest
+
+Angular 21 uses Vitest as its default test runner (replacing Karma/Jasmine). Tests use `.spec.ts` files alongside the code they test.
+
+### Test Structure
+
+```typescript
+describe('BankService', () => {
+  let service: BankService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [BankService] });
+    service = TestBed.inject(BankService);
+  });
+
+  it('should be created', () => {
+    // Arrange — done in beforeEach
+
+    // Act — nothing extra needed
+
+    // Assert
+    expect(service).toBeTruthy();
+  });
+});
+```
+
+### Mocking with `vi.fn()`
+
+Vitest's equivalent of Moq — create fake methods that return controlled values.
+
+```typescript
+// Create a mock ApiService
+const mockApiService = {
+  getBalance: vi.fn().mockReturnValue(of({ balance: 500 })),
+  getTransactions: vi.fn().mockReturnValue(of([])),
+  deposit: vi.fn().mockReturnValue(of({})),
+  withdraw: vi.fn().mockReturnValue(of({}))
+};
+
+// Register it in TestBed
+TestBed.configureTestingModule({
+  providers: [
+    BankService,
+    { provide: ApiService, useValue: mockApiService }  // Inject mock instead of real
+  ]
+});
+```
+
+**C# equivalent:**
+```
+vi.fn()                     →  new Mock<T>()
+.mockReturnValue(of(...))   →  .Setup(...).ReturnsAsync(...)
+{ provide: X, useValue: Y } →  DI registration with mock
+```
+
+### Testing HTTP Calls with HttpTestingController
+
+For testing `ApiService` itself (the service that makes real HTTP calls):
+
+```typescript
+let httpMock: HttpTestingController;
+
+beforeEach(() => {
+  TestBed.configureTestingModule({
+    providers: [ApiService, provideHttpClient(), provideHttpClientTesting()]
+  });
+  httpMock = TestBed.inject(HttpTestingController);
+});
+
+it('should call GET /api/account/balance', () => {
+  // Arrange
+  const mockResponse = { balance: 100 };
+
+  // Act
+  service.getBalance().subscribe(response => {
+    // Assert
+    expect(response).toEqual(mockResponse);
+  });
+
+  // Assert — verify the correct HTTP request was made
+  const req = httpMock.expectOne('https://localhost:7160/api/account/balance');
+  expect(req.request.method).toBe('GET');
+  req.flush(mockResponse);  // Simulate the server response
+});
+
+afterEach(() => {
+  httpMock.verify();  // Ensure no unexpected HTTP calls
+});
+```
+
+### Testing Components with BehaviorSubject
+
+Use `BehaviorSubject` to control observable values in component tests:
+
+```typescript
+let balanceSubject: BehaviorSubject<number>;
+
+beforeEach(() => {
+  balanceSubject = new BehaviorSubject<number>(0);
+
+  const mockBankService = {
+    balance$: balanceSubject.asObservable()
+  };
+
+  TestBed.configureTestingModule({
+    imports: [DashboardComponent],
+    providers: [{ provide: BankService, useValue: mockBankService }]
+  });
+});
+
+it('should display updated balance', () => {
+  // Arrange
+  balanceSubject.next(250);   // Push a new value
+
+  // Act
+  fixture.detectChanges();    // Trigger Angular change detection
+
+  // Assert
+  const el = fixture.nativeElement.querySelector('.balance-amount');
+  expect(el.textContent).toContain('250');
+});
+```
+
+### Testing Forms (Reactive Forms)
+
+```typescript
+it('should be invalid when amount is empty', () => {
+  // Arrange
+  component.depositForm.controls['amount'].setValue('');
+
+  // Act
+  fixture.detectChanges();
+
+  // Assert
+  expect(component.depositForm.valid).toBeFalse();
+});
+
+it('should call deposit and navigate on valid submit', () => {
+  // Arrange
+  component.depositForm.controls['amount'].setValue(100);
+  component.depositForm.controls['description'].setValue('Test');
+
+  // Act
+  component.onSubmit();
+
+  // Assert
+  expect(mockBankService.deposit).toHaveBeenCalledWith(100, 'Test');
+  expect(mockRouter.navigate).toHaveBeenCalledWith(['/dashboard']);
+});
+```
+
+### Key Vitest / Angular Testing Concepts
+
+| Concept | What it does | Example |
+|---------|-------------|---------|
+| `vi.fn()` | Creates a mock function | `deposit: vi.fn()` |
+| `.mockReturnValue()` | Sets the return value | `.mockReturnValue(of({}))` |
+| `TestBed` | Configures a test module | `TestBed.configureTestingModule({...})` |
+| `ComponentFixture` | Wraps a component for testing | `fixture = TestBed.createComponent(X)` |
+| `fixture.detectChanges()` | Triggers Angular change detection | After changing data |
+| `fixture.nativeElement` | Access the component's DOM | `.querySelector('.class')` |
+| `BehaviorSubject` | Observable you can push values to | Mock for `balance$` |
+| `HttpTestingController` | Intercepts HTTP requests in tests | `httpMock.expectOne(url)` |
+| `req.flush(data)` | Simulates server response | `req.flush({ balance: 100 })` |
+| `toHaveBeenCalledWith()` | Verify mock was called with args | `expect(fn).toHaveBeenCalledWith(100)` |
+
+### Angular Testing vs xUnit (.NET) Concepts
+
+| xUnit (.NET) | Vitest (Angular) |
+|-------------|-----------------|
+| `[Fact]` | `it('...', () => {})` |
+| `Assert.Equal(a, b)` | `expect(a).toBe(b)` |
+| `Assert.ThrowsAsync<T>()` | `expect(() => fn()).toThrow()` |
+| `Mock<IRepo>` | `vi.fn()` / mock object |
+| `.Setup().ReturnsAsync()` | `.mockReturnValue(of(...))` |
+| `.Verify(Times.Once)` | `expect(fn).toHaveBeenCalledTimes(1)` |
+| Constructor (shared setup) | `beforeEach(() => {...})` |
+| `[Fact]` naming convention | `it('should...')` naming convention |
+
+---
+
 ## Quick Reference Table
 
 | Concept | What it does | Where we used it |
@@ -399,3 +580,11 @@ JavaScript's `...` operator unpacks an array into individual items. Used in our 
 | `@if` | Conditional rendering | Error messages, alerts |
 | `@for` | Loop rendering | Transaction list |
 | `standalone: true` | Self-contained component | All components |
+| `vi.fn()` | Creates a mock function (Vitest) | Mock ApiService methods |
+| `.mockReturnValue()` | Sets mock return value | `.mockReturnValue(of({}))` |
+| `TestBed` | Configures test module | All spec files |
+| `ComponentFixture` | Wraps component for testing | Component specs |
+| `fixture.detectChanges()` | Trigger change detection in tests | All component tests |
+| `BehaviorSubject` (in tests) | Controllable observable for mocks | Mock `balance$`, `transactions$` |
+| `HttpTestingController` | Intercepts HTTP in tests | ApiService spec |
+| `toHaveBeenCalledWith()` | Verify mock call arguments | Deposit/withdraw submit tests |

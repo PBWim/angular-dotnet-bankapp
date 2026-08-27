@@ -50,6 +50,26 @@ Full-stack integration with a .NET 8 Web API backend. Data is now persisted in S
 - Dependency injection
 - CORS configuration
 - Auto-migration and database seeding
+- Unit testing — xUnit + Moq (backend), Vitest (frontend)
+
+## Testing
+
+**71 total tests** across backend and frontend:
+
+| Layer | Framework | Tests |
+|-------|-----------|-------|
+| Backend (handlers) | xUnit + Moq | 23 |
+| Frontend (services + components) | Vitest | 48 |
+
+```bash
+# Run backend tests
+cd server/BankApp
+dotnet test
+
+# Run frontend tests
+cd client
+ng test --watch=false
+```
 
 ## Roadmap
 
@@ -70,6 +90,8 @@ Full-stack integration with a .NET 8 Web API backend. Data is now persisted in S
 | ORM | Entity Framework Core 8 |
 | Mediator | MediatR |
 | Architecture | Clean Architecture + DDD + CQRS |
+| Backend Testing | xUnit + Moq |
+| Frontend Testing | Vitest |
 | Auth | JWT *(Phase 3)* |
 
 ## Getting Started
