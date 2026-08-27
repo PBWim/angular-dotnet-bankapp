@@ -107,4 +107,14 @@ export class BankService {
       this.loadTransactions();
     });
   }
+
+  refresh(): void {
+    this.loadBalance();
+    this.loadTransactions();
+  }
+
+  clear(): void {
+    this.balance.next(0);
+    this.transactions.next([]);
+  }
 }

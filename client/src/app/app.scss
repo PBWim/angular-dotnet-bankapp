@@ -33,3 +33,17 @@
     }
   }
 }
+
+.welcome {
+  color: #adb5bd;
+  font-size: 0.9rem;
+}
+
+.logout-link {
+  cursor: pointer;
+  color: #ff6b6b;
+
+  &:hover {
+    color: #ff4444;
+  }
+}

@@ -582,6 +582,180 @@ Examples:
 
 ---
 
+## 14. JWT Authentication (Phase 3)
+
+JSON Web Tokens (JWT) for stateless authentication. The server generates a signed token on login, and the client sends it with every request.
+
+### How JWT Works
+
+```
+1. User sends email + password → POST /api/auth/login
+2. Server validates credentials → generates signed JWT token
+3. Server returns token to client
+4. Client stores token in localStorage
+5. Client sends token in Authorization header with every request
+6. Server validates token and extracts user identity from claims
+```
+
+### Token Generation
+
+```csharp
+public string GenerateToken(User user)
+{
+    var claims = new List<Claim>
+    {
+        new(ClaimTypes.NameIdentifier, user.Id.ToString()),  // Who they are
+        new(ClaimTypes.Email, user.Email),
+        new(ClaimTypes.GivenName, user.FirstName)
+    };
+
+    var key = new SymmetricSecurityKey(
+        Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"]!));
+
+    var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+    var token = new JwtSecurityToken(
+        issuer: _configuration["Jwt:Issuer"],
+        audience: _configuration["Jwt:Audience"],
+        claims: claims,
+        expires: DateTime.UtcNow.AddHours(24),
+        signingCredentials: credentials
+    );
+
+    return new JwtSecurityTokenHandler().WriteToken(token);
+}
+```
+
+### Key JWT Concepts
+
+| Concept | What it does | Example |
+|---------|-------------|---------|
+| **Claims** | Data embedded in the token | UserId, Email, FirstName |
+| **SymmetricSecurityKey** | Secret key to sign/verify tokens | From `appsettings.json` |
+| **SigningCredentials** | Algorithm used to sign | HMAC-SHA256 |
+| **Issuer/Audience** | Who created / who should accept | `"BankApp"` |
+| **Expires** | Token lifetime | 24 hours |
+
+### Protecting Endpoints with `[Authorize]`
+
+```csharp
+[ApiController]
+[Authorize]          // All endpoints in this controller require a valid token
+[Route("api/account")]
+public class AccountController : ControllerBase
+```
+
+### Extracting User Identity from Token
+
+```csharp
+private Guid GetUserId() =>
+    Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+// Use it in endpoints
+[HttpGet("balance")]
+public async Task<IActionResult> GetBalance()
+{
+    var balance = await _mediator.Send(new GetBalanceQuery(GetUserId()));
+    return Ok(new { balance });
+}
+```
+
+`User` is a built-in property on `ControllerBase` — it contains the claims from the validated JWT token. No database lookup needed.
+
+### JWT Authentication Middleware (Program.cs)
+
+```csharp
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!))
+    };
+});
+
+// Middleware order matters!
+app.UseCors("AllowAngular");
+app.UseAuthentication();   // 1. Validate the token
+app.UseAuthorization();    // 2. Check [Authorize] attribute
+app.MapControllers();
+```
+
+### Password Hashing in Domain Entity
+
+```csharp
+// Business logic in the entity (DDD)
+public User(string email, string password, string firstName, string lastName)
+{
+    if (string.IsNullOrWhiteSpace(password))
+        throw new ArgumentException("Password is required.");
+    if (password.Length < 6)
+        throw new ArgumentException("Password must be at least 6 characters.");
+
+    PasswordHash = HashPassword(password);
+    // Creates a default account for the user
+    _accounts.Add(new Account());
+}
+
+public bool VerifyPassword(string password)
+{
+    return PasswordHash == HashPassword(password);
+}
+
+private static string HashPassword(string password)
+{
+    var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
+    return Convert.ToBase64String(bytes);
+}
+```
+
+### Auth CQRS Commands
+
+```csharp
+// Register — creates user + returns token
+public record RegisterCommand(string Email, string Password,
+    string FirstName, string LastName) : IRequest<AuthResponseDto>;
+
+// Login — validates credentials + returns token
+public record LoginCommand(string Email, string Password) : IRequest<AuthResponseDto>;
+
+// Response DTO
+public record AuthResponseDto(string Token, string Email, string FirstName);
+```
+
+### Request vs Command Separation
+
+```csharp
+// What the API receives (no UserId — comes from token)
+public record DepositRequest(decimal Amount, string Description);
+
+// What the handler receives (UserId added by controller)
+public record DepositCommand(Guid UserId, decimal Amount, string Description) : IRequest<Unit>;
+
+// Controller bridges them
+[HttpPost("deposit")]
+public async Task<IActionResult> Deposit([FromBody] DepositRequest request)
+{
+    await _mediator.Send(new DepositCommand(GetUserId(), request.Amount, request.Description));
+    return Ok();
+}
+```
+
+**Why?** The frontend never sends a UserId — it comes from the authenticated token, preventing users from impersonating each other.
+
+---
+
 ## Quick Reference Table
 
 | Concept | What it does | Where we used it |
@@ -611,3 +785,11 @@ Examples:
 | `.Verify()` | Assert a method was called | `SaveChangesAsync` verification |
 | `Assert.ThrowsAsync<T>()` | Verify exception is thrown | Validation failure tests |
 | AAA Pattern | Arrange, Act, Assert structure | All tests |
+| `[Authorize]` | Protect endpoints — require valid JWT | AccountController, TransactionController |
+| `ClaimTypes.NameIdentifier` | Extract UserId from JWT token | `GetUserId()` helper |
+| `JwtSecurityToken` | Build a signed JWT token | `JwtService.GenerateToken()` |
+| `SymmetricSecurityKey` | Secret key for signing tokens | From `appsettings.json` |
+| `AddAuthentication().AddJwtBearer()` | Configure JWT validation | `Program.cs` |
+| `UseAuthentication()` | Middleware to validate tokens | Must come before `UseAuthorization()` |
+| Password Hashing | SHA256 hash in domain entity | `User.HashPassword()`, `User.VerifyPassword()` |
+| Request vs Command | API shape vs handler shape | `DepositRequest` → `DepositCommand` with UserId |

@@ -9,7 +9,7 @@ import { Transaction } from '../models/transaction.model';
 export class ApiService {
   private baseUrl = 'https://localhost:7160/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getBalance(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/account/balance`);
@@ -24,6 +24,14 @@ export class ApiService {
   }
 
   getTransactions(): Observable<Transaction[]> {
-    return this.http.get<Transaction[]>(`${this.baseUrl}/transaction`); 
+    return this.http.get<Transaction[]>(`${this.baseUrl}/transaction`);
+  }
+
+  register(email: string, password: string, firstName: string, lastName: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/auth/register`, { email, password, firstName, lastName });
+  }
+
+  login(email: string, password: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/auth/login`, { email, password });
   }
 }

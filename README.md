@@ -52,14 +52,39 @@ Full-stack integration with a .NET 8 Web API backend. Data is now persisted in S
 - Auto-migration and database seeding
 - Unit testing — xUnit + Moq (backend), Vitest (frontend)
 
+## Phase 3 — JWT Authentication (In Progress)
+
+User authentication with JWT tokens. Each user gets their own account and data — no more shared state.
+
+### Features
+
+- **User Registration** — Create an account with email, password, first name, last name
+- **User Login** — Authenticate and receive a JWT token
+- **Protected Endpoints** — All banking operations require a valid token
+- **Per-User Data** — Each user sees only their own balance and transactions
+- **Angular Auth Flow** — Login/register pages, JWT interceptor, auth guard, dynamic navbar
+
+### Concepts Covered
+
+- JWT token generation and validation
+- Password hashing (SHA256)
+- `[Authorize]` attribute on controllers
+- Claims-based identity (`ClaimTypes.NameIdentifier`)
+- Angular HTTP interceptor (auto-attach token)
+- Angular route guard (`canActivate`)
+- localStorage for token persistence
+- Swagger JWT configuration
+- User entity with DDD patterns (rich constructor, private setters, backing field)
+- CQRS for auth (RegisterCommand, LoginCommand)
+
 ## Testing
 
-**71 total tests** across backend and frontend:
+**78 total tests** across backend and frontend:
 
 | Layer | Framework | Tests |
 |-------|-----------|-------|
 | Backend (handlers) | xUnit + Moq | 23 |
-| Frontend (services + components) | Vitest | 48 |
+| Frontend (services + components) | Vitest | 55 |
 
 ```bash
 # Run backend tests
@@ -77,7 +102,7 @@ ng test --watch=false
 |-------|-------|--------|
 | **Phase 1** | Frontend only — Angular fundamentals, in-memory data | ✅ Complete |
 | **Phase 2** | Add .NET backend — Web API, Entity Framework, SQL Server | ✅ Complete |
-| **Phase 3** | Auth & multi-account — JWT authentication, savings/checking accounts, transfers | Upcoming |
+| **Phase 3** | Auth & multi-account — JWT authentication, savings/checking accounts, transfers | 🔨 In Progress |
 | **Phase 4** | Advanced features — Spending analytics, recurring payments, multi-currency, admin panel | Upcoming |
 
 ## Tech Stack
@@ -92,7 +117,7 @@ ng test --watch=false
 | Architecture | Clean Architecture + DDD + CQRS |
 | Backend Testing | xUnit + Moq |
 | Frontend Testing | Vitest |
-| Auth | JWT *(Phase 3)* |
+| Auth | JWT (Bearer tokens) |
 
 ## Getting Started
 

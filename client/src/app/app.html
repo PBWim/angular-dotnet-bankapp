@@ -350,6 +350,8 @@
     <a routerLink="/deposit" routerLinkActive="active">Deposit</a>
     <a routerLink="/withdraw" routerLinkActive="active">Withdraw</a>
     <a routerLink="/transactions" routerLinkActive="active">Transactions</a>
+    <span class="welcome">Hi, {{ (currentUser$ | async)?.firstName }}</span>
+    <a (click)="logout()" class="logout-link">Logout</a>
   </div>
 </nav>
 
