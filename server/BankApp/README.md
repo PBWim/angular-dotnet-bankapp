@@ -56,6 +56,7 @@ server/BankApp/src/
 | Database | SQL Server LocalDB |
 | Mediator | MediatR |
 | Architecture | Clean Architecture + DDD + CQRS |
+| Testing | xUnit + Moq |
 
 ## Prerequisites
 
@@ -135,6 +136,26 @@ POST /api/account/withdraw
   }
 ]
 ```
+
+## Testing
+
+```bash
+cd server/BankApp
+dotnet test
+```
+
+23 unit tests covering all command and query handlers using xUnit with Moq:
+
+```
+server/BankApp/tests/BankApp.Tests/
+└── Application/
+    ├── DepositCommandHandlerTests.cs      (7 tests)
+    ├── WithdrawCommandHandlerTests.cs     (9 tests)
+    ├── GetBalanceQueryHandlerTests.cs      (3 tests)
+    └── GetTransactionsQueryHandlerTests.cs (4 tests)
+```
+
+Tests follow the **AAA pattern** (Arrange, Act, Assert) and mock `IAccountRepository` to test handlers in isolation.
 
 ## CORS
 

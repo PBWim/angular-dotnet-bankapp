@@ -450,6 +450,138 @@ deposit(amount: number, description: string): void {
 
 ---
 
+## 13. Unit Testing with xUnit & Moq
+
+Test each handler in isolation by mocking the repository.
+
+### Test Project Structure
+
+```
+server/BankApp/tests/BankApp.Tests/
+└── Application/
+    ├── DepositCommandHandlerTests.cs
+    ├── WithdrawCommandHandlerTests.cs
+    ├── GetBalanceQueryHandlerTests.cs
+    └── GetTransactionsQueryHandlerTests.cs
+```
+
+### AAA Pattern (Arrange, Act, Assert)
+
+Every test follows this structure:
+
+```csharp
+[Fact]
+public async Task Handle_ValidDeposit_ShouldIncreaseBalance()
+{
+    // Arrange — set up test data and dependencies
+    var command = new DepositCommand(100, "Salary");
+
+    // Act — call the method being tested
+    await _handler.Handle(command, CancellationToken.None);
+
+    // Assert — verify the result
+    Assert.Equal(100, _account.Balance);
+}
+```
+
+### Mocking with Moq
+
+Create a fake version of `IAccountRepository` so tests don't need a real database.
+
+```csharp
+// Create the mock
+var mockRepo = new Mock<IAccountRepository>();
+
+// Set up behavior — when GetOrCreateDefaultAsync is called, return our test account
+mockRepo.Setup(r => r.GetOrCreateDefaultAsync())
+        .ReturnsAsync(account);
+
+// Pass the mock to the handler
+var handler = new DepositCommandHandler(mockRepo.Object);
+//                                      ^ .Object gives the fake instance
+```
+
+### Verifying Method Calls
+
+Check that a method was (or wasn't) called:
+
+```csharp
+// Verify SaveChangesAsync was called exactly once
+mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
+
+// Verify it was NEVER called (e.g., when validation fails)
+mockRepo.Verify(r => r.SaveChangesAsync(), Times.Never);
+```
+
+### Testing Exceptions
+
+```csharp
+[Fact]
+public async Task Handle_ZeroAmount_ShouldThrowArgumentException()
+{
+    // Arrange
+    var command = new DepositCommand(0, "Bad deposit");
+
+    // Act & Assert — combined because the Act IS the assertion
+    await Assert.ThrowsAsync<ArgumentException>(
+        () => _handler.Handle(command, CancellationToken.None));
+}
+```
+
+### Shared Setup with Constructor
+
+xUnit creates a new instance for each test, so the constructor is your shared Arrange:
+
+```csharp
+public class DepositCommandHandlerTests
+{
+    private readonly Mock<IAccountRepository> _mockRepo;
+    private readonly DepositCommandHandler _handler;
+    private readonly Account _account;
+
+    public DepositCommandHandlerTests()
+    {
+        // Runs before EVERY test — fresh state each time
+        _mockRepo = new Mock<IAccountRepository>();
+        _account = new Account();
+        _mockRepo.Setup(r => r.GetOrCreateDefaultAsync()).ReturnsAsync(_account);
+        _handler = new DepositCommandHandler(_mockRepo.Object);
+    }
+}
+```
+
+### Test Naming Convention
+
+```
+MethodName_Scenario_ExpectedResult
+```
+
+Examples:
+- `Handle_ValidDeposit_ShouldIncreaseBalance`
+- `Handle_ExceedsBalance_ShouldThrowInvalidOperationException`
+- `Handle_ZeroAmount_ShouldNotCallSaveChanges`
+
+### Key xUnit Attributes
+
+| Attribute | What it does |
+|-----------|-------------|
+| `[Fact]` | Marks a method as a test |
+| `[Theory]` | Parameterized test (runs multiple times with different data) |
+| `[InlineData]` | Provides data for a `[Theory]` test |
+
+### Key Assert Methods
+
+| Method | What it checks |
+|--------|---------------|
+| `Assert.Equal(expected, actual)` | Values are equal |
+| `Assert.Single(collection)` | Collection has exactly one item |
+| `Assert.Empty(collection)` | Collection is empty |
+| `Assert.ThrowsAsync<T>()` | Async method throws expected exception |
+| `Assert.NotEqual(a, b)` | Values are not equal |
+| `Assert.IsType<T>(obj)` | Object is the expected type |
+
+---
+
 ## Quick Reference Table
 
 | Concept | What it does | Where we used it |
@@ -473,3 +605,9 @@ deposit(amount: number, description: string): void {
 | Auto-Migration | DB created on startup | `db.Database.Migrate()` |
 | `HttpClient` | Angular HTTP calls | `ApiService` |
 | `provideHttpClient()` | Register HttpClient in Angular | `app.config.ts` |
+| `[Fact]` | Marks a test method | All test classes |
+| `Mock<T>` | Creates a fake dependency | `Mock<IAccountRepository>` |
+| `.Setup().ReturnsAsync()` | Configure mock behavior | Repository mock setup |
+| `.Verify()` | Assert a method was called | `SaveChangesAsync` verification |
+| `Assert.ThrowsAsync<T>()` | Verify exception is thrown | Validation failure tests |
+| AAA Pattern | Arrange, Act, Assert structure | All tests |
