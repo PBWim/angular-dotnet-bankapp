@@ -6,4 +6,12 @@
     <!-- The async pipe keeps watching — like setting up an alert that notifies you every time your balance changes. -->
     <span class="amount">{{ balance$ | async | currency: 'USD' }}</span>
   </div>
+  <div class="account-switcher">
+    <button [class.active]="(activeAccountType$ | async) === 'Checking'" (click)="switchAccount('Checking')">
+      Checking
+    </button>
+    <button [class.active]="(activeAccountType$ | async) === 'Savings'" (click)="switchAccount('Savings')">
+      Savings
+    </button>
+  </div>
 </div>

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { ApiService } from './api.service';
 import { Router } from '@angular/router';
-import { BankService } from './bank.service';
+import { AuthEventService } from './auth-event.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +20,7 @@ export class AuthService {
   currentUser$ = this.currentUser.asObservable();
 
   constructor(private apiService: ApiService, private router: Router,
-              private bankService: BankService) {}
+              private authEventService: AuthEventService) {}
 
   register(email: string, password: string, firstName: string, lastName: string): void {
     this.apiService.register(email, password, firstName, lastName).subscribe({
@@ -52,7 +52,7 @@ export class AuthService {
     localStorage.removeItem(this.userKey);
     this.loggedIn.next(false);
     this.currentUser.next(null);
-    this.bankService.clear();  // <-- Reset data
+    this.authEventService.emitLogout();  // <-- Emit logout event
     this.router.navigate(['/login']);
   }
 
@@ -82,6 +82,6 @@ export class AuthService {
     }));
     this.loggedIn.next(true);
     this.currentUser.next({ email: response.email, firstName: response.firstName });
-     this.bankService.refresh();  // <-- Load the new user's data
+    this.authEventService.emitLogin();  // <-- Emit login event
   }
 }

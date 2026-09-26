@@ -11,20 +11,20 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  getBalance(): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/account/balance`);
+  getBalance(type: string = 'Checking'): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/account/balance?type=${type}`);
   }
 
-  deposit(amount: number, description: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/account/deposit`, { amount, description });
+  deposit(accountType: string, amount: number, description: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/account/deposit`, { accountType, amount, description });
   }
 
-  withdraw(amount: number, description: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/account/withdraw`, { amount, description });
+  withdraw(accountType: string, amount: number, description: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/account/withdraw`, { accountType, amount, description });
   }
 
-  getTransactions(): Observable<Transaction[]> {
-    return this.http.get<Transaction[]>(`${this.baseUrl}/transaction`);
+  getTransactions(type: string = 'Checking'): Observable<Transaction[]> {
+    return this.http.get<Transaction[]>(`${this.baseUrl}/transaction?type=${type}`);
   }
 
   register(email: string, password: string, firstName: string, lastName: string): Observable<any> {

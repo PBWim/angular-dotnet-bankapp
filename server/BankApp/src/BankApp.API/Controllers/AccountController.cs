@@ -1,4 +1,6 @@
-﻿using BankApp.Application.Commands.Deposit;
+﻿using Azure.Core;
+using BankApp.API.Requests;
+using BankApp.Application.Commands.Deposit;
 using BankApp.Application.Commands.Withdraw;
 using BankApp.Application.Queries.GetBalance;
 using BankApp.Domain.Enums;
@@ -35,11 +37,14 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("deposit")]
-    public async Task<IActionResult> Deposit([FromBody] DepositCommand command)
+    public async Task<IActionResult> Deposit([FromBody] DepositRequest depositRequest)
     {
         try
         {
-            var newBalance = await _mediator.Send(new DepositCommand(GetUserId(), command.AccountType, command.Amount, command.Description));
+            if (!Enum.TryParse<AccountType>(depositRequest.AccountType, true, out var accountType))
+                return BadRequest(new { error = "Invalid account type" });
+
+            var newBalance = await _mediator.Send(new DepositCommand(GetUserId(), accountType, depositRequest.Amount, depositRequest.Description));
             return Ok(new { balance = newBalance });
         }
         catch (ArgumentException ex)
@@ -49,11 +54,14 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("withdraw")]
-    public async Task<IActionResult> Withdraw([FromBody] WithdrawCommand command)
+    public async Task<IActionResult> Withdraw([FromBody] WithdrawRequest withdrawRequest)
     {
         try
         {
-            var newBalance = await _mediator.Send(new WithdrawCommand(GetUserId(), command.AccountType, command.Amount, command.Description));
+            if (!Enum.TryParse<AccountType>(withdrawRequest.AccountType, true, out var accountType))
+                return BadRequest(new { error = "Invalid account type" });
+            
+            var newBalance = await _mediator.Send(new WithdrawCommand(GetUserId(), accountType, withdrawRequest.Amount, withdrawRequest.Description));
             return Ok(new { balance = newBalance });
         }
         catch (ArgumentException ex)

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Transaction } from '../models/transaction.model';
 import { ApiService } from './api.service';
+import { AuthEventService } from './auth-event.service';
 
 @Injectable({
   // The providedIn: 'root' option makes this service a singleton and available throughout the 
@@ -27,20 +28,29 @@ export class BankService {
   balance$ = this.balance.asObservable();
   transactions$ = this.transactions.asObservable();
 
-  constructor(private apiService: ApiService) {
+  private activeAccountType = new BehaviorSubject<string>('Checking');
+  activeAccountType$ = this.activeAccountType.asObservable();
+
+  constructor(private apiService: ApiService, private authEventService: AuthEventService) {
     this.loadBalance();
     this.loadTransactions();
+
+    // React to auth events without creating circular dependency
+    this.authEventService.login$.subscribe(() => this.refresh());
+    this.authEventService.logout$.subscribe(() => this.clear());
   }
 
   private loadBalance(): void {
-    this.apiService.getBalance().subscribe(response => {
+    const type = this.activeAccountType.getValue();
+    this.apiService.getBalance(type).subscribe(response => {
       console.log('Balance loaded from API:', response);
       this.balance.next(response.balance);  // extract the number from the object
     });
   }
 
   private loadTransactions(): void {
-    this.apiService.getTransactions().subscribe(transactions => {
+    const type = this.activeAccountType.getValue();
+    this.apiService.getTransactions(type).subscribe(transactions => {
       console.log('Transactions loaded from API:', transactions);
       this.transactions.next(transactions);
     });
@@ -71,7 +81,9 @@ export class BankService {
 
     // console.log('Balance after deposit:', this.balance.value); // .value gives you the balance right now
 
-    this.apiService.deposit(amount, description).subscribe(response => {
+    const type = this.activeAccountType.getValue();
+
+    this.apiService.deposit(type, amount, description).subscribe(response => {
       console.log('Deposit response:', response);
       this.loadBalance();
       this.loadTransactions();
@@ -101,11 +113,19 @@ export class BankService {
 
     // return true;
 
-    this.apiService.withdraw(amount, description).subscribe(response => {
+    const type = this.activeAccountType.getValue();
+
+    this.apiService.withdraw(type, amount, description).subscribe(response => {
       console.log('Withdraw response:', response);
       this.loadBalance();
       this.loadTransactions();
     });
+  }
+
+  switchAccount(type: string): void {
+    this.activeAccountType.next(type);
+    this.loadBalance();
+    this.loadTransactions();
   }
 
   refresh(): void {
