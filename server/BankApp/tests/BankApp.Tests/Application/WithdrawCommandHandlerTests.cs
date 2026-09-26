@@ -20,7 +20,7 @@ namespace BankApp.Tests.Application
             _mockRepo = new Mock<IAccountRepository>();
             _account = new Account();
 
-            _mockRepo.Setup(r => r.GetByUserIdAsync(_userId))
+            _mockRepo.Setup(r => r.GetByUserIdAndTypeAsync(_userId, _accountType))
                      .ReturnsAsync(_account);
 
             _handler = new WithdrawCommandHandler(_mockRepo.Object);
