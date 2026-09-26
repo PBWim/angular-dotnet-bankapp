@@ -1,5 +1,6 @@
 ﻿using BankApp.Application.Interfaces;
 using BankApp.Domain.Entities;
+using BankApp.Domain.Enums;
 using BankApp.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +27,13 @@ public class AccountRepository : IAccountRepository
         return await _context.Accounts
             .Include(a => a.Transactions)
             .FirstOrDefaultAsync(a => a.UserId == userId);
+    }
+
+    public async Task<Account?> GetByUserIdAndTypeAsync(Guid userId, AccountType type)
+    {
+        return await _context.Accounts
+            .Include(a => a.Transactions)
+            .FirstOrDefaultAsync(a => a.UserId == userId && a.Type == type);
     }
 
     public async Task SaveChangesAsync()

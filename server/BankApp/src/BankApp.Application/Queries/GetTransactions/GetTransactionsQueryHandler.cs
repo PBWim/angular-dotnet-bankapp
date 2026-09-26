@@ -15,7 +15,7 @@ public class GetTransactionsQueryHandler : IRequestHandler<GetTransactionsQuery,
 
     public async Task<List<TransactionDto>> Handle(GetTransactionsQuery request, CancellationToken cancellationToken)
     {
-        var account = await _accountRepository.GetByUserIdAsync(request.UserId) ?? throw new InvalidOperationException("Account not found.");
+        var account = await _accountRepository.GetByUserIdAndTypeAsync(request.UserId, request.AccountType) ?? throw new InvalidOperationException("Account not found.");
         return account.Transactions
             .OrderByDescending(t => t.CreatedAt)
             .Select(t => new TransactionDto(

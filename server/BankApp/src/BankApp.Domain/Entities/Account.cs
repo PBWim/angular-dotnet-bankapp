@@ -1,4 +1,6 @@
-﻿namespace BankApp.Domain.Entities;
+﻿using BankApp.Domain.Enums;
+
+namespace BankApp.Domain.Entities;
 
 public class Account
 {
@@ -6,15 +8,16 @@ public class Account
     public decimal Balance { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public Guid UserId { get; private set; }
-
+    public AccountType Type { get; private set; }
     private readonly List<Transaction> _transactions = new();
     public IReadOnlyCollection<Transaction> Transactions => _transactions.AsReadOnly();
 
-    public Account()
+    public Account(AccountType type = AccountType.Checking)
     {
         Id = Guid.NewGuid();
         Balance = 0;
         CreatedAt = DateTime.UtcNow;
+        Type = type;
     }
 
     public void Deposit(decimal amount, string description)

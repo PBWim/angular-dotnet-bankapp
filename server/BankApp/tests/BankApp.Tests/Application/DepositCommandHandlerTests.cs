@@ -1,6 +1,7 @@
 ﻿using BankApp.Application.Commands.Deposit;
 using BankApp.Application.Interfaces;
 using BankApp.Domain.Entities;
+using BankApp.Domain.Enums;
 using Moq;
 
 namespace BankApp.Tests.Application
@@ -11,6 +12,7 @@ namespace BankApp.Tests.Application
         private readonly DepositCommandHandler _handler;
         private readonly Account _account;
         private readonly Guid _userId = Guid.NewGuid();
+        private readonly AccountType _accountType = AccountType.Checking;
 
         public DepositCommandHandlerTests()
         {
@@ -28,7 +30,7 @@ namespace BankApp.Tests.Application
         public async Task Handle_ValidDeposit_ShouldIncreaseBalance()
         {
             // Arrange
-            var command = new DepositCommand(_userId, 100, "Salary");
+            var command = new DepositCommand(_userId, _accountType, 100, "Salary");
 
             // Act
             await _handler.Handle(command, CancellationToken.None);
@@ -41,7 +43,7 @@ namespace BankApp.Tests.Application
         public async Task Handle_ValidDeposit_ShouldCreateTransaction()
         {
             // Arrange
-            var command = new DepositCommand(_userId, 100, "Salary");
+            var command = new DepositCommand(_userId, _accountType, 100, "Salary");
 
             // Act
             await _handler.Handle(command, CancellationToken.None);
@@ -58,7 +60,7 @@ namespace BankApp.Tests.Application
         public async Task Handle_ValidDeposit_ShouldCallSaveChanges()
         {
             // Arrange
-            var command = new DepositCommand(_userId, 100, "Salary");
+            var command = new DepositCommand(_userId, _accountType, 100, "Salary");
 
             // Act
             await _handler.Handle(command, CancellationToken.None);
@@ -71,8 +73,8 @@ namespace BankApp.Tests.Application
         public async Task Handle_MultipleDeposits_ShouldAccumulateBalance()
         {
             // Arrange
-            var command1 = new DepositCommand(_userId, 100, "First");
-            var command2 = new DepositCommand(_userId, 50, "Second");
+            var command1 = new DepositCommand(_userId, _accountType, 100, "First");
+            var command2 = new DepositCommand(_userId, _accountType, 50, "Second");
 
             // Act
             await _handler.Handle(command1, CancellationToken.None);
@@ -86,7 +88,7 @@ namespace BankApp.Tests.Application
         public async Task Handle_ZeroAmount_ShouldThrowArgumentException()
         {
             // Arrange
-            var command = new DepositCommand(_userId, 0, "Bad deposit");
+            var command = new DepositCommand(_userId, _accountType, 0, "Bad deposit");
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(
@@ -97,7 +99,7 @@ namespace BankApp.Tests.Application
         public async Task Handle_NegativeAmount_ShouldThrowArgumentException()
         {
             // Arrange
-            var command = new DepositCommand(_userId, -50, "Bad deposit");
+            var command = new DepositCommand(_userId, _accountType, -50, "Bad deposit");
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(
@@ -108,7 +110,7 @@ namespace BankApp.Tests.Application
         public async Task Handle_ZeroAmount_ShouldNotCallSaveChanges()
         {
             // Arrange
-            var command = new DepositCommand(_userId, 0, "Bad deposit");
+            var command = new DepositCommand(_userId, _accountType, 0, "Bad deposit");
 
             // Act
             try { await _handler.Handle(command, CancellationToken.None); } catch { }

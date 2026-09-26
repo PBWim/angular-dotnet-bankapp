@@ -1,6 +1,7 @@
 ﻿using BankApp.Application.Commands.Withdraw;
 using BankApp.Application.Interfaces;
 using BankApp.Domain.Entities;
+using BankApp.Domain.Enums;
 using Moq;
 
 namespace BankApp.Tests.Application
@@ -11,6 +12,7 @@ namespace BankApp.Tests.Application
         private readonly WithdrawCommandHandler _handler;
         private readonly Account _account;
         private readonly Guid _userId = Guid.NewGuid();
+        private readonly AccountType _accountType = AccountType.Checking;
 
         public WithdrawCommandHandlerTests()
         {
@@ -29,7 +31,7 @@ namespace BankApp.Tests.Application
         {
             // Arrange
             _account.Deposit(200, "Setup");
-            var command = new WithdrawCommand(_userId, 50, "Groceries");
+            var command = new WithdrawCommand(_userId, _accountType, 50, "Groceries");
 
             // Act
             await _handler.Handle(command, CancellationToken.None);
@@ -43,7 +45,7 @@ namespace BankApp.Tests.Application
         {
             // Arrange
             _account.Deposit(200, "Setup");
-            var command = new WithdrawCommand(_userId, 50, "Groceries");
+            var command = new WithdrawCommand(_userId, _accountType, 50, "Groceries");
 
             // Act
             await _handler.Handle(command, CancellationToken.None);
@@ -61,7 +63,7 @@ namespace BankApp.Tests.Application
         {
             // Arrange
             _account.Deposit(200, "Setup");
-            var command = new WithdrawCommand(_userId, 50, "Groceries");
+            var command = new WithdrawCommand(_userId, _accountType, 50, "Groceries");
 
             // Act
             await _handler.Handle(command, CancellationToken.None);
@@ -75,7 +77,7 @@ namespace BankApp.Tests.Application
         {
             // Arrange
             _account.Deposit(100, "Setup");
-            var command = new WithdrawCommand(_userId, 150, "Too much");
+            var command = new WithdrawCommand(_userId, _accountType, 150, "Too much");
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(
@@ -87,7 +89,7 @@ namespace BankApp.Tests.Application
         {
             // Arrange
             _account.Deposit(100, "Setup");
-            var command = new WithdrawCommand(_userId, 150, "Too much");
+            var command = new WithdrawCommand(_userId, _accountType, 150, "Too much");
 
             // Act
             try { await _handler.Handle(command, CancellationToken.None); } catch { }
@@ -101,7 +103,7 @@ namespace BankApp.Tests.Application
         {
             // Arrange
             _account.Deposit(100, "Setup");
-            var command = new WithdrawCommand(_userId, 100, "All of it");
+            var command = new WithdrawCommand(_userId, _accountType, 100, "All of it");
 
             // Act
             await _handler.Handle(command, CancellationToken.None);
@@ -115,7 +117,7 @@ namespace BankApp.Tests.Application
         {
             // Arrange
             _account.Deposit(100, "Setup");
-            var command = new WithdrawCommand(_userId, 0, "Bad withdrawal");
+            var command = new WithdrawCommand(_userId, _accountType, 0, "Bad withdrawal");
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(
@@ -127,7 +129,7 @@ namespace BankApp.Tests.Application
         {
             // Arrange
             _account.Deposit(100, "Setup");
-            var command = new WithdrawCommand(_userId, -50, "Bad withdrawal");
+            var command = new WithdrawCommand(_userId, _accountType, -50, "Bad withdrawal");
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(
@@ -138,7 +140,7 @@ namespace BankApp.Tests.Application
         public async Task Handle_FromZeroBalance_ShouldThrowInvalidOperationException()
         {
             // Arrange
-            var command = new WithdrawCommand(_userId, 50, "From empty");
+            var command = new WithdrawCommand(_userId, _accountType, 50, "From empty");
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(

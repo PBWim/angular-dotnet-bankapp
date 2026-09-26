@@ -2,6 +2,7 @@
 using BankApp.Application.Interfaces;
 using BankApp.Application.Queries.GetTransactions;
 using BankApp.Domain.Entities;
+using BankApp.Domain.Enums;
 using Moq;
 
 namespace BankApp.Tests.Application
@@ -12,6 +13,7 @@ namespace BankApp.Tests.Application
         private readonly GetTransactionsQueryHandler _handler;
         private readonly Account _account;
         private readonly Guid _userId = Guid.NewGuid();
+        private readonly AccountType _accountType = AccountType.Checking;
 
         public GetTransactionsQueryHandlerTests()
         {
@@ -29,7 +31,7 @@ namespace BankApp.Tests.Application
         public async Task Handle_NoTransactions_ShouldReturnEmptyList()
         {
             // Arrange
-            var query = new GetTransactionsQuery(_userId);
+            var query = new GetTransactionsQuery(_userId, _accountType);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -44,7 +46,7 @@ namespace BankApp.Tests.Application
             // Arrange
             _account.Deposit(100, "First");
             _account.Withdraw(50, "Second");
-            var query = new GetTransactionsQuery(_userId);
+            var query = new GetTransactionsQuery(_userId, _accountType);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -58,7 +60,7 @@ namespace BankApp.Tests.Application
         {
             // Arrange
             _account.Deposit(100, "Salary");
-            var query = new GetTransactionsQuery(_userId);
+            var query = new GetTransactionsQuery(_userId, _accountType);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -78,7 +80,7 @@ namespace BankApp.Tests.Application
             _account.Deposit(100, "First");
             _account.Deposit(200, "Second");
             _account.Deposit(300, "Third");
-            var query = new GetTransactionsQuery(_userId);
+            var query = new GetTransactionsQuery(_userId, _accountType);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);

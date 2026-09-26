@@ -1,6 +1,7 @@
 ﻿using BankApp.Application.Interfaces;
 using BankApp.Application.Queries.GetBalance;
 using BankApp.Domain.Entities;
+using BankApp.Domain.Enums;
 using Moq;
 
 namespace BankApp.Tests.Application
@@ -11,6 +12,7 @@ namespace BankApp.Tests.Application
         private readonly GetBalanceQueryHandler _handler;
         private readonly Account _account;
         private readonly Guid _userId = Guid.NewGuid();
+        private readonly AccountType _accountType = AccountType.Checking;
 
         public GetBalanceQueryHandlerTests()
         {
@@ -28,7 +30,7 @@ namespace BankApp.Tests.Application
         public async Task Handle_NewAccount_ShouldReturnZero()
         {
             // Arrange
-            var query = new GetBalanceQuery(_userId);
+            var query = new GetBalanceQuery(_userId, _accountType);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -42,7 +44,7 @@ namespace BankApp.Tests.Application
         {
             // Arrange
             _account.Deposit(250, "Setup");
-            var query = new GetBalanceQuery(_userId);
+            var query = new GetBalanceQuery(_userId, _accountType);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -57,7 +59,7 @@ namespace BankApp.Tests.Application
             // Arrange
             _account.Deposit(500, "Salary");
             _account.Withdraw(150, "Rent");
-            var query = new GetBalanceQuery(_userId);
+            var query = new GetBalanceQuery(_userId, _accountType);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);

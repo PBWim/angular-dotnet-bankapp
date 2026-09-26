@@ -1,7 +1,7 @@
-﻿using Azure.Core;
-using BankApp.Application.Commands.Deposit;
+﻿using BankApp.Application.Commands.Deposit;
 using BankApp.Application.Commands.Withdraw;
 using BankApp.Application.Queries.GetBalance;
+using BankApp.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,9 +25,12 @@ public class AccountController : ControllerBase
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     [HttpGet("balance")]
-    public async Task<IActionResult> GetBalance()
+    public async Task<IActionResult> GetBalance([FromQuery] string type = "Checking")
     {
-        var balance = await _mediator.Send(new GetBalanceQuery(GetUserId()));
+        if (!Enum.TryParse<AccountType>(type, true, out var accountType))
+            return BadRequest("Invalid account type");
+
+        var balance = await _mediator.Send(new GetBalanceQuery(GetUserId(), accountType));
         return Ok(new { balance });
     }
 
@@ -36,7 +39,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var newBalance = await _mediator.Send(new DepositCommand(GetUserId(), command.Amount, command.Description));
+            var newBalance = await _mediator.Send(new DepositCommand(GetUserId(), command.AccountType, command.Amount, command.Description));
             return Ok(new { balance = newBalance });
         }
         catch (ArgumentException ex)
@@ -50,7 +53,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var newBalance = await _mediator.Send(new WithdrawCommand(GetUserId(), command.Amount, command.Description));
+            var newBalance = await _mediator.Send(new WithdrawCommand(GetUserId(), command.AccountType, command.Amount, command.Description));
             return Ok(new { balance = newBalance });
         }
         catch (ArgumentException ex)

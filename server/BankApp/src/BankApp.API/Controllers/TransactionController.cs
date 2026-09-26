@@ -1,4 +1,5 @@
 ﻿using BankApp.Application.Queries.GetTransactions;
+using BankApp.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,9 +23,12 @@ public class TransactionController : ControllerBase
         Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     [HttpGet]
-    public async Task<IActionResult> GetTransactions()
+    public async Task<IActionResult> GetTransactions([FromQuery] string type = "Checking")
     {
-        var transactions = await _mediator.Send(new GetTransactionsQuery(GetUserId()));
+        if (!Enum.TryParse<AccountType>(type, true, out var accountType))
+            return BadRequest("Invalid account type");
+
+        var transactions = await _mediator.Send(new GetTransactionsQuery(GetUserId(), accountType));
         return Ok(transactions);
     }
 }

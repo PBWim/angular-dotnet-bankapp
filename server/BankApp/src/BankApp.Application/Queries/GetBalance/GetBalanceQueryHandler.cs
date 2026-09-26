@@ -14,7 +14,7 @@ public class GetBalanceQueryHandler : IRequestHandler<GetBalanceQuery, decimal>
 
     public async Task<decimal> Handle(GetBalanceQuery request, CancellationToken cancellationToken)
     {
-        var account = await _accountRepository.GetByUserIdAsync(request.UserId) ?? throw new InvalidOperationException("Account not found.");
+        var account = await _accountRepository.GetByUserIdAndTypeAsync(request.UserId, request.AccountType) ?? throw new InvalidOperationException("Account not found.");
         return account.Balance;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using BankApp.Domain.Enums;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace BankApp.Domain.Entities;
@@ -34,7 +35,8 @@ public class User
         CreatedAt = DateTime.UtcNow;
 
         // Create a default checking account for every new user
-        _accounts.Add(new Account());
+        _accounts.Add(new Account(AccountType.Checking));
+        _accounts.Add(new Account(AccountType.Savings));
     }
 
     public bool VerifyPassword(string password)
