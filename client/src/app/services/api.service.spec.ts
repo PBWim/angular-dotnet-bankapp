@@ -38,21 +38,21 @@ describe('ApiService', () => {
 
   it('getBalance should make GET request to /account/balance', () => {
     // Act
-    service.getBalance().subscribe();
+    service.getBalance('Checking').subscribe();
 
     // Assert
-    const req = httpMock.expectOne(`${baseUrl}/account/balance`);
+    const req = httpMock.expectOne(`${baseUrl}/account/balance?type=Checking`);
     expect(req.request.method).toBe('GET');
     req.flush({ balance: 100 });
   });
 
   it('getBalance should return balance data', () => {
     // Act & Assert
-    service.getBalance().subscribe(response => {
+    service.getBalance('Checking').subscribe(response => {
       expect(response.balance).toBe(250);
     });
 
-    const req = httpMock.expectOne(`${baseUrl}/account/balance`);
+    const req = httpMock.expectOne(`${baseUrl}/account/balance?type=Checking`);
     req.flush({ balance: 250 });
   });
 
@@ -60,12 +60,12 @@ describe('ApiService', () => {
 
   it('deposit should make POST request to /account/deposit', () => {
     // Act
-    service.deposit(100, 'Salary').subscribe();
+    service.deposit('Checking', 100, 'Salary').subscribe();
 
     // Assert
     const req = httpMock.expectOne(`${baseUrl}/account/deposit`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ amount: 100, description: 'Salary' });
+    expect(req.request.body).toEqual({ accountType: 'Checking',amount: 100, description: 'Salary' });
     req.flush({});
   });
 
@@ -73,12 +73,12 @@ describe('ApiService', () => {
 
   it('withdraw should make POST request to /account/withdraw', () => {
     // Act
-    service.withdraw(50, 'Groceries').subscribe();
+    service.withdraw('Checking', 50, 'Groceries').subscribe();
 
     // Assert
     const req = httpMock.expectOne(`${baseUrl}/account/withdraw`);
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ amount: 50, description: 'Groceries' });
+    expect(req.request.body).toEqual({ accountType: 'Checking',amount: 50, description: 'Groceries' });
     req.flush({});
   });
 
@@ -86,10 +86,10 @@ describe('ApiService', () => {
 
   it('getTransactions should make GET request to /transaction', () => {
     // Act
-    service.getTransactions().subscribe();
+    service.getTransactions('Checking').subscribe();
 
     // Assert
-    const req = httpMock.expectOne(`${baseUrl}/transaction`);
+    const req = httpMock.expectOne(`${baseUrl}/transaction?type=Checking`);
     expect(req.request.method).toBe('GET');
     req.flush([]);
   });
@@ -101,12 +101,12 @@ describe('ApiService', () => {
     ];
 
     // Act & Assert
-    service.getTransactions().subscribe(transactions => {
+    service.getTransactions('Checking').subscribe(transactions => {
       expect(transactions.length).toBe(1);
       expect(transactions[0].type).toBe('deposit');
     });
 
-    const req = httpMock.expectOne(`${baseUrl}/transaction`);
+    const req = httpMock.expectOne(`${baseUrl}/transaction?type=Checking`);
     req.flush(mockTransactions);
   });
 });

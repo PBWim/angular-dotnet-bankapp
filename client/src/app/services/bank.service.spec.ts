@@ -3,70 +3,79 @@ import { TestBed } from '@angular/core/testing';
 import { BankService } from './bank.service';
 import { ApiService } from './api.service';
 import { of } from 'rxjs';
+import { AuthEventService } from './auth-event.service';
 
 // 2. describe — groups related tests (like a test class in xUnit)
 // This is the equivalent of your xUnit test class: public class BankServiceTests { }
 describe('BankService', () => {
 
-    // Now let's add the setup. 
-    let service: BankService;
-    let mockApiService: any;
+  // Now let's add the setup. 
+  let service: BankService;
+  let mockApiService: any;
+  let mockAuthEventService: any;
+  // In xUnit you used the constructor — in Jasmine you use beforeEach:
+  beforeEach(() => {
+    // This is like your xUnit constructor — runs before EVERY test
 
-    // In xUnit you used the constructor — in Jasmine you use beforeEach:
-    beforeEach(() => {
-        // This is like your xUnit constructor — runs before EVERY test
+    // Create a mock of ApiService (like new Mock<IAccountRepository> in C#)
+    // Set default return values (like .Setup().ReturnsAsync() in Moq)
+    mockApiService = {
+      getBalance: vi.fn().mockReturnValue(of({ balance: 0 })), // Like .Setup(r => r.GetOrCreateDefaultAsync()).ReturnsAsync(account)
+      getTransactions: vi.fn().mockReturnValue(of([])),
+      deposit: vi.fn().mockReturnValue(of({})),
+      withdraw: vi.fn().mockReturnValue(of({}))
+    };
 
-        // Create a mock of ApiService (like new Mock<IAccountRepository> in C#)
-        // Set default return values (like .Setup().ReturnsAsync() in Moq)
-        mockApiService = {
-            getBalance: vi.fn().mockReturnValue(of({ balance: 0 })), // Like .Setup(r => r.GetOrCreateDefaultAsync()).ReturnsAsync(account)
-            getTransactions: vi.fn().mockReturnValue(of([])),
-            deposit: vi.fn().mockReturnValue(of({})),
-            withdraw: vi.fn().mockReturnValue(of({}))
-        };
+    mockAuthEventService = {
+      login$: of(),   // empty observable — won't emit during tests
+      logout$: of(),
+      emitLogin: vi.fn(),
+      emitLogout: vi.fn()
+    };
 
-        // Set up DI (like builder.Services.AddScoped in Program.cs)
-        // builder.Services.AddScoped<...>()
-        TestBed.configureTestingModule({
-            providers: [
-                BankService,
-                { provide: ApiService, useValue: mockApiService }
-            ]
-        });
-
-        // Get the service instance (like DI resolving it)
-        service = TestBed.inject(BankService); // Constructor injection
+    // Set up DI (like builder.Services.AddScoped in Program.cs)
+    // builder.Services.AddScoped<...>()
+    TestBed.configureTestingModule({
+      providers: [
+        BankService,
+        { provide: ApiService, useValue: mockApiService },
+        { provide: AuthEventService, useValue: mockAuthEventService }
+      ]
     });
 
-    // Now let's write our first test together. Write this inside the describe block:
-    // it() — defines a single test (like [Fact] in xUnit)
-    // expect().toBeTruthy() — assertion (like Assert.NotNull() in xUnit)
+    // Get the service instance (like DI resolving it)
+    service = TestBed.inject(BankService); // Constructor injection
+  });
 
-    // ==================== Creation Tests ====================
+  // Now let's write our first test together. Write this inside the describe block:
+  // it() — defines a single test (like [Fact] in xUnit)
+  // expect().toBeTruthy() — assertion (like Assert.NotNull() in xUnit)
 
-    it('should be created', () => {
-        // Assert
-        expect(service).toBeTruthy();
-    });
+  // ==================== Creation Tests ====================
 
-    it('should load balance on creation', () => {
-        // Assert
-        expect(mockApiService.getBalance).toHaveBeenCalled();
-    });
+  it('should be created', () => {
+    // Assert
+    expect(service).toBeTruthy();
+  });
 
-    it('should load transactions on creation', () => {
-        // Assert
-        expect(mockApiService.getTransactions).toHaveBeenCalled();
-    });
+  it('should load balance on creation', () => {
+    // Assert
+    expect(mockApiService.getBalance).toHaveBeenCalled();
+  });
 
-      // ==================== Balance Tests ====================
+  it('should load transactions on creation', () => {
+    // Assert
+    expect(mockApiService.getTransactions).toHaveBeenCalled();
+  });
+
+  // ==================== Balance Tests ====================
 
   it('should update balance$ from API response', () => {
     // Arrange
     mockApiService.getBalance.mockReturnValue(of({ balance: 500 }));
 
     // Act — recreate service to trigger constructor
-    service = new BankService(mockApiService);
+    service = new BankService(mockApiService, mockAuthEventService);
 
     // Assert
     let balance = 0;
@@ -81,7 +90,7 @@ describe('BankService', () => {
     service.deposit(100, 'Test deposit');
 
     // Assert
-    expect(mockApiService.deposit).toHaveBeenCalledWith(100, 'Test deposit');
+    expect(mockApiService.deposit).toHaveBeenCalledWith('Checking', 100, 'Test deposit');
   });
 
   it('deposit should reload balance after success', () => {
@@ -107,7 +116,7 @@ describe('BankService', () => {
     service.withdraw(50, 'Test withdrawal');
 
     // Assert
-    expect(mockApiService.withdraw).toHaveBeenCalledWith(50, 'Test withdrawal');
+    expect(mockApiService.withdraw).toHaveBeenCalledWith('Checking', 50, 'Test withdrawal');
   });
 
   it('withdraw should reload balance after success', () => {
